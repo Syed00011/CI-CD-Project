@@ -39,7 +39,7 @@ pipeline {
         }
         stage('docker run') {
             steps {
-                sh 'docker run -d --name spring-boot-container1 -p 8083:8080 spring-boot1'
+                sh 'docker run -d -p 8083:8081 spring-boot1'
             }
         }
     }
