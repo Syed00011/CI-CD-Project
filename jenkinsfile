@@ -37,9 +37,9 @@ pipeline {
                 sh 'docker build -t spring-boot1 .'
             }
         }
-        stage('docker compose') {
+        stage('docker run') {
             steps {
-                sh 'docker-compose up -d'
+                sh 'docker run -d --name spring-boot-container -p 8080:8080 spring-boot1'
             }
         }
     }
