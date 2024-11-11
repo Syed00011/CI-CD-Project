@@ -2,69 +2,71 @@ def COLOR_MAP = [
     'SUCCESS': 'good',
     'FAILURE': 'danger'
 ]
-
 pipeline {
     agent any
-    
     environment {
         SCANNER_HOME = tool 'sonarqube'
     }
-    
     stages {
-        stage('Git Checkout') {
+        stage('git checkout') {
             steps {
-                // Checkout code from your GitHub repository
-                git 'https://github.com/Sushmaa123/Java-Springboot.git'
+                git 'https://github.com/Syed00011/CI-CD-Project.git'
             }
         }
-        
-        stage('Compile') {
+        stage('compile') {
             steps {
-                // Compile the application using Maven
                 sh 'mvn compile'
             }
         }
-        
-        stage('Code Analysis') {
+        stage('code analysis') {
             steps {
-                // Run SonarQube analysis
                 withSonarQubeEnv('sonar-server') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Java-Springboot \
-                          -Dsonar.java.binaries=. \
-                          -Dsonar.projectKey=Java-Springboot'''
+                    sh ''' 
+                        $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=CI-CD-Project \
+                        -Dsonar.java.binaries=. \
+                        -Dsonar.projectKey=CI-CD-Project
+                    '''
                 }
             }
         }
-        
-        stage('Package') {
+        stage('package') {
             steps {
-                // Package the application using Maven (produces the JAR file)
                 sh 'mvn install'
             }
         }
-        
-        stage('Docker Build') {
+        stage('docker login') {
             steps {
-                // Build the Docker image for your Spring Boot application
-                sh 'docker build -t spring-boot1 .'
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                    }
+                }
             }
         }
-        
-        stage('Docker Run') {
+        stage('docker build') {
             steps {
-                // Run the Docker container
-                sh 'docker run -d -p 8093:8091 spring-boot1'
+                sh 'docker build -t spring-boot12 .'
+            }
+        }
+        stage('docker push') {
+            steps {
+                sh 'docker tag spring-boot12 sanjay145/spring-boot12'
+                sh 'docker push sanjay145/spring-boot12'
+            }
+        }
+        stage('docker compose') {
+            steps {
+                sh 'docker-compose up -d'
             }
         }
     }
 
     post {
         always {
-            // Send a Slack notification with the build result
-            echo 'Sending Slack notification...'
-            slackSend channel: '#ci-cd',
-                      color: COLOR_MAP[currentBuild.currentResult],
-                      message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
-        }
-    }
+            echo 'slack Notification.'
+            slackSend channel: '#cicd',
+            color: COLOR_MAP[currentBuild.currentResult],
+            message: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+        }
+    }
 }
