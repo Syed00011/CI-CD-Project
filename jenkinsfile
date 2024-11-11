@@ -56,17 +56,17 @@ pipeline {
         }
         stage('docker container') {
             steps {
-                sh 'docker run -itd -p 8091=8091 sprint-boot'
+                sh 'docker run -itd -p 8091:8091 spring-boot'
             }
         }
     }
 
     post {
         always {
-            echo 'slack Notification.'
+            echo 'Slack Notification.'
             slackSend channel: '#mock-ci-cd',
-            color: COLOR_MAP[currentBuild.currentResult],
-            message: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
-        }
-    }
+                      color: COLOR_MAP[currentBuild.currentResult],
+                      message: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+        }
+    }
 }
