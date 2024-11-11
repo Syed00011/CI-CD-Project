@@ -37,7 +37,7 @@ pipeline {
         stage('docker login') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'docker-token', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
                     }
                 }
@@ -45,18 +45,18 @@ pipeline {
         }
         stage('docker build') {
             steps {
-                sh 'docker build -t spring-boot12 .'
+                sh 'docker build -t spring-boot .'
             }
         }
         stage('docker push') {
             steps {
-                sh 'docker tag spring-boot12 sanjay145/spring-boot12'
-                sh 'docker push sanjay145/spring-boot12'
+                sh 'docker tag spring-boot syed00011/spring-boot1'
+                sh 'docker push syed00011/spring-boot1'
             }
         }
-        stage('docker compose') {
+        stage('docker container') {
             steps {
-                sh 'docker-compose up -d'
+                sh 'docker run -itd -p 8091=8091 sprint-boot'
             }
         }
     }
@@ -64,7 +64,7 @@ pipeline {
     post {
         always {
             echo 'slack Notification.'
-            slackSend channel: '#cicd',
+            slackSend channel: '#mock-ci-cd',
             color: COLOR_MAP[currentBuild.currentResult],
             message: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
         }
