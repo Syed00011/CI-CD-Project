@@ -50,8 +50,8 @@ pipeline {
         }
         stage('docker push') {
             steps {
-                sh 'docker tag spring-boot syed00011/spring-boot1'
-                sh 'docker push syed00011/spring-boot1'
+                sh 'docker tag spring-boot syed00011/spring12'
+                sh 'docker push syed00011/spring12'
             }
         }
         stage('docker container') {
@@ -64,7 +64,7 @@ pipeline {
     post {
         always {
             echo 'Slack Notification.'
-            slackSend channel: '#mock-ci-cd',
+            slackSend channel: '#mycicd',
                       color: COLOR_MAP[currentBuild.currentResult],
                       message: "${currentBuild.currentResult}: Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
         }
